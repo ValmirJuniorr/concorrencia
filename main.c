@@ -5,6 +5,7 @@
 #include "list.h"
 
 #define SIZE_LIST 10
+#define AMOUNT_OF_THREADS 20
 
 void *consumer(void *ptr);
 void *producer(void *ptr);
@@ -14,13 +15,20 @@ pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 int main(){  
   List *list = create_list(SIZE_LIST);
 
-  pthread_t thread1, thread2;
+  pthread_t thread_id[AMOUNT_OF_THREADS * 2];  
 
-  pthread_create(&thread1, NULL, producer, (void*) list);
-  pthread_create(&thread2, NULL, consumer, (void*) list);
+  int number, i, j;
 
-  pthread_join(thread1, NULL);
-  pthread_join(thread2, NULL); 
+  for(i=0; i < AMOUNT_OF_THREADS; i++)
+  {    
+    pthread_create( &thread_id[i], NULL, producer, (void*) list);
+    pthread_create( &thread_id[i + AMOUNT_OF_THREADS], NULL, consumer, (void*) list);
+  }
+
+  for(j=0; j < AMOUNT_OF_THREADS * 2; j++)
+  {
+    pthread_join( thread_id[j], NULL); 
+  }
   
   printf("Final list: \n");
   print_list(*list);
