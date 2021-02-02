@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <unistd.h>
 #include "custom_types.h"
 #include "list.h"
 
@@ -10,7 +9,7 @@
 void *consumer(void *ptr);
 void *producer(void *ptr);
 
-int lock = 0;
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
 int main(){  
   List *list = create_list(SIZE_LIST);
@@ -31,9 +30,7 @@ int main(){
 
 
 void *producer( void *ptr ){  
-  while(lock);
-
-  lock = 1 ;
+  pthread_mutex_lock( &mutex1 );
 
   List *list = (List*) ptr;
 
@@ -48,13 +45,11 @@ void *producer( void *ptr ){
   printf("O item: %d, foi adicionado á lista pelo producer...\n", number);
   printf("************************\n");
 
-  lock = 0;
+  pthread_mutex_unlock( &mutex1 );
 }
 
 void *consumer( void *ptr ){
-  while(lock);
-
-  lock = 1 ;
+  pthread_mutex_lock( &mutex1 );
   
   List *list = (List*) ptr;
 
@@ -73,5 +68,5 @@ void *consumer( void *ptr ){
     printf("Empty list :(\n");
   }
 
-  lock = 0;
+  pthread_mutex_unlock( &mutex1 );
 }
