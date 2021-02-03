@@ -13,4 +13,12 @@ gcc -pthread list.o main.c -o main
 ./main
 ```
 
+### Responses
+
+- The are in the [responses.txt](exercicio/responses.txt)
+
+
+#### Link para esse repositório
+
+- https://github.com/ValmirJuniorr/concorrencia
 

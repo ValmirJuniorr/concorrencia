@@ -1,0 +1,5 @@
+2.a) Os dados ficam inconsistentens, uma vez que uma thread pode sobrescrever,
+o valor que outra tinha escrito.
+
+3.a) A sincronização, pois nada impede que os consumidores, tentem acessar uma
+ informação que ainda não está produzida por exemplo.
