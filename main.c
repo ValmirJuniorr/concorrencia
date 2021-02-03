@@ -1,6 +1,7 @@
+#include <pthread.h>
+#include <semaphore.h> 
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <unistd.h>
 #include "custom_types.h"
 #include "list.h"
@@ -14,16 +15,19 @@
 void *consumer(void *ptr);
 void *producer(void *ptr);
 
-int lock = FALSE;
-int can_add = TRUE;
-int can_remove = FALSE;
-
+sem_t empty_list;
+sem_t full_list;
+sem_t lock_sem;
 
 int main(){
 
   long int inicio, fim;
 
   inicio = clock();
+
+  sem_init(&empty_list, 0, SIZE_LIST);
+  sem_init(&full_list, 0, 0);
+  sem_init(&lock_sem, 0, 1);
 
   List *list = create_list(SIZE_LIST);
 
@@ -41,6 +45,10 @@ int main(){
   {
     pthread_join( thread_id[j], NULL); 
   }
+
+  sem_destroy(&empty_list);
+  sem_destroy(&full_list);
+  sem_destroy(&lock_sem);
   
   printf("Final list: \n");
   print_list(*list);
@@ -53,11 +61,8 @@ int main(){
 
 
 void *producer( void *ptr ){
-  while(!can_add || lock){
-     sleep(1);
-  }
-
-  lock = TRUE;
+  sem_wait(&empty_list);
+  sem_wait(&lock_sem);
 
   List *list = (List*) ptr;
 
@@ -72,19 +77,14 @@ void *producer( void *ptr ){
   printf("O item: %d, foi adicionado á lista pelo producer...\n", number);
   printf("************************\n");
 
-  can_add = list->length < list->max_length;
-
-  can_remove = TRUE;
-
-  lock = FALSE;
+  sem_post(&lock_sem);
+  sem_post(&full_list);
+  sleep(random() % 3);
 }
 
 void *consumer( void *ptr ){
-  while(!can_remove || lock){
-    sleep(1);
-  }
-
-  lock = TRUE;
+  sem_wait(&full_list);
+  sem_wait(&lock_sem);
 
   List *list = (List*) ptr;
 
@@ -99,9 +99,7 @@ void *consumer( void *ptr ){
   printf("O item: %d, foi removido da lista pelo Consumer...\n", value_to_be_removed);
   printf("************************\n");
 
-  can_remove = list->length > 0;
-  
-  can_add = TRUE;
-
-  lock = FALSE;
+  sem_post(&lock_sem);
+  sem_post(&empty_list);
+  sleep(random() % 3);
 }
