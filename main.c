@@ -55,6 +55,8 @@ int main(){
 
   fim = clock();
 
+  free(list);
+
   printf("Tempo de execução em %.2lf segundos\n", (double)(fim-inicio)/1000000);
   return 0;
 }
